@@ -1,0 +1,1236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.xstandoff.net/2009/xstandoff/1.1"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
+  xmlns:all="http://www.xstandoff.net/2009/all" elementFormDefault="qualified"
+  xmlns:xsf="http://www.xstandoff.net/2009/xstandoff/1.1" xmlns:dcr="http://www.isocat.org/ns/dcr"
+  vc:minVersion="1.1">
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd"/>
+  <xs:import namespace="http://www.isocat.org/ns/dcr" schemaLocation="dcr.xsd"/>
+  <xs:annotation>
+    <xs:documentation xml:lang="en">
+      <![CDATA[
+      XSD for the XStandoff format (XSF) base layer
+      Version: 2.1 (XSD 1.1)
+      Date: 2014-10-06 14:19
+      Copyright (c) 2008-2013 Maik Stührenberg, Bielefeld University.
+      Contact: maik@xstandoff.net
+      Since 2010-04-22 XStandoff instances may use the IANA registered mime-type application/prs.xsf+xml (Application/Personal Tree - prs.xsf+xml), see http://www.iana.org/assignments/media-types/application/prs.xsf+xml for further references. 
+      This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+      This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU GNU Lesser General Public License for more details.
+      You should have received a copy of the GNU Lesser General Public License along with this program (file 'lgpl-3.0.txt').  If not, see <http://www.gnu.org/licenses/>.
+      ]]>
+    </xs:documentation>
+  </xs:annotation>
+  <!-- Element declaration -->
+  <xs:element name="corpusData">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The corpusData element stores all information regarding a
+        single corpus file, including meta data (optional), resources (optional), primaryData
+        (optional), segmentation (optional), annotation, and other corpusData
+        entries.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:group ref="xsf:metaChoice"/>
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+          <xs:element ref="xsf:primaryData" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element ref="xsf:resources" minOccurs="0" maxOccurs="1"/>
+        </xs:choice>
+        <xs:element ref="xsf:segmentation" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="xsf:annotation" minOccurs="0" maxOccurs="1"/>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element ref="xsf:corpusData"/>
+          <xs:element ref="xsf:corpusDataRef"/>
+        </xs:choice>
+      </xs:sequence>
+      <xs:attributeGroup ref="xsf:cd.attributes"/>
+      <xs:attributeGroup ref="xsf:alt.attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="corpusDataRef">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The corpusDataRef element is used as a placeholder for a
+        single corpusData entry saved externally.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="xsf:refType">
+          <xs:attributeGroup ref="xsf:cd.attributes"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="metaRef" type="xsf:refType">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The metaRef element is used as a placeholder for external
+        metadata.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="primaryData">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The primaryData element contains either one (or more)
+        reference(s) to a normalized (in terms of whitespace) file serving as base data for the
+        annotation, or -- when dealing with shorter texts -- the whole text as a string underneath
+        the textualContent child element.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:group ref="xsf:metaChoice"/>
+        <xs:choice>
+          <xs:element ref="xsf:textualContent" minOccurs="1" maxOccurs="1"/>
+          <xs:element ref="xsf:primaryDataRef" maxOccurs="unbounded"/>
+        </xs:choice>
+        <xs:group ref="xsf:log" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="xsf:pd.attributes"/>
+      <xs:attribute ref="xml:id" use="optional"/>
+      <xs:attribute ref="xml:lang" use="optional"/>
+      <xs:attribute ref="xml:space" use="optional"/>
+      <xs:assert test="if (@end and @start) then (@end ge @start) else (not(@start))">
+        <xs:annotation>
+          <xs:appinfo>If provided, the value of the start attribute must be less than or equal to
+            the end attribute's value.</xs:appinfo>
+          <xs:documentation xml:lang="en">Display the above error message if this assertion
+            fails.</xs:documentation>
+        </xs:annotation>
+      </xs:assert>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="primaryDataRef">
+    <xs:complexType>
+      <xs:annotation>
+        <xs:documentation xml:lang="en">The primaryDataRef element is used to refer to one or
+          externally stored representations of the primary data used during the annotation process.
+          Since spatial primary data can be used as well, we extend the refType complexType with the
+          corresponding spatial.ref.attributes attGroup.</xs:documentation>
+      </xs:annotation>
+      <xs:complexContent>
+        <xs:extension base="xsf:refType">
+          <xs:attributeGroup ref="xsf:base.attributes"/>
+          <xs:attributeGroup ref="xsf:spatial.ref.attributes"/>
+          <xs:attributeGroup ref="xsf:pointer.attributes"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="textualContent">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The textualContent element stores the textual primary
+        data.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attributeGroup ref="xsf:base.attributes"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="checksum">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The checksum element can be used to preserve integrity of the
+        primary data when dealing with multiple annotation layers.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType mixed="true">
+      <xs:attribute name="algorithm" type="xs:string" use="required">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">It is required to supply the algorithm that was used to
+            calculate the checksum.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="resources">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The resources element is a container element for the resources
+        used for segmentation or annotation of the primary data. Resources can be included in an XSF
+        file (via the resource element) or referred to by the resourceRef
+        element.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence minOccurs="1" maxOccurs="unbounded">
+        <xs:group ref="xsf:metaChoice"/>
+        <xs:element ref="xsf:resource"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="segmentation">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The segmentation element is a container element for the
+        segmentation units (segment, one or more) that are used to identify text spans in the
+        primary data.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:group ref="xsf:metaChoice"/>
+        <xs:element ref="xsf:segment" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="segment">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">A segment identifies a (character or time) span over the
+        primary data. The creator attribute may be used for referencing a resource that was used
+        during segmentation, in addition, the alt attribute may be used to mark this segment as an
+        alternative segmentation to other segments.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="xsf:metaChoice"/>
+        <xs:group ref="xsf:log" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="xsf:creator.attribute"/>
+      <xs:attributeGroup ref="xsf:base.attributes"/>
+      <xs:attributeGroup ref="xsf:seg.attributes"/>
+      <xs:attributeGroup ref="xsf:pointer.attributes"/>
+      <xs:attributeGroup ref="xsf:spatial.attributes"/>
+      <xs:attributeGroup ref="xsf:alt.attribute"/>
+      <xs:assert
+        test="if (@type='spatial') then @coords 
+        else 
+        if (@type='empty') then (@end = @start) 
+        else
+        if (@type='seg') then (@segments)         
+        else
+        if (@start and @end) then (@end gt @start)
+        else
+        (not(@start) and not(@end))">
+        <xs:annotation>
+          <xs:appinfo>The value of the start attribute must be less than the end attribute's value
+            (if the value of the type attribute is not 'empty'). If the value of the type attribute
+            is 'spatial' the coords attributes have to be present.</xs:appinfo>
+          <xs:documentation xml:lang="en">Display the above error message if this assertion
+            fails.</xs:documentation>
+        </xs:annotation>
+      </xs:assert>
+      <xs:assert
+        test="if (@type='spatial' and @context='2d' and @shape='poly') then count(tokenize(@coords,' ')) > 2 
+            else  
+            if (@type='spatial' and @shape='circle' and count(tokenize(@coords,' ')) = 1) then (for $coord in tokenize(@coords,' ') return count(tokenize($coord,',')) = 3) 
+            else 
+            if (@type='spatial' and @shape='bezier')
+            then starts-with(@coords,'C')
+            else         
+            (@type!='spatial' or @context!='2d')">
+        <xs:annotation>
+          <xs:appinfo>In 2d contexts, circular spatial segments are defined by triplets number of
+            coordinates (delimited by ',') should be at least three (for a triangular
+            shape).</xs:appinfo>
+          <xs:documentation xml:lang="en">Display the above error message if this assertion
+            fails.</xs:documentation>
+        </xs:annotation>
+      </xs:assert>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="resource">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The resource element contains optional meta data and the
+        resource used for segmentation or annotation.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:group ref="xsf:metaChoice"/>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element ref="xsf:resourceContent" minOccurs="1" maxOccurs="1"/>
+          <xs:element ref="xsf:resourceRef"/>
+        </xs:choice>
+      </xs:sequence>
+      <xs:attribute ref="xml:id" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="resourceRef" type="xsf:refType">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The resourceRef element is used for referencing resources used
+        in the annotation process that are stored externally.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="resourceContent">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The resourceContent contains the content of a resource in
+        terms of a wrapper for foreign namespace elements.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="annotation">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The annotation element contains annotation levels (and their
+        respective layer(s)).</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:group ref="xsf:metaChoice"/>
+        <xs:element ref="xsf:level" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="level">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The level element stores meta information and the actual
+        annotation layer(s). A level refers to the conceptual model of information represented in
+        markup.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:group ref="xsf:metaChoice"/>
+        <xs:element ref="xsf:layer" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute ref="xml:id" use="optional"/>
+      <xs:attribute name="import" type="xs:IDREFS" use="optional">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">The import attribute should be used to mark other
+            annotations levels that have to be established before this level can be used (i.e. this
+            annotation level uses information derived from other levels).</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute ref="dcr:datcat" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="meta">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The meta element can be used to store meta information.
+        Elements derived from other namespaces are allowed, e.g. OLAC metadata is recommended for
+        textual primary data. Note that schema processing is set to lax, i.e. a meta information
+        schema can be provided but is optional.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="layer">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">In contrast to the level the layer element refers to the
+        technical realisation (or XML serialisation) of markup. It contains the converted (i.e.
+        standoff) representation of inline annotation layers and their respective elements and
+        attributes. Note that schema processing is set to lax, i.e. an underlying schema (XSD)
+        should be accessible, i.e., all layers should have an corresponding XSD associated, the only
+        exception should be the all layer. The priority attribute can be used to prioritize
+        annotation levels (in case of overlapping markup during an inline markup unification) -- the
+        highest number correspond to the innermost markup. The creator attribute can be used to
+        refer to resources that have been provided in an XSF file or to a user/agent who has made an
+        annotation level. Keep in mind, that its type is NMTOKENS since resources belong to the
+        corpus as a whole, not to a single corpusData file.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:group ref="xsf:metaChoice"/>
+        <xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+      </xs:sequence>
+      <xs:attribute ref="xml:id" use="optional"/>
+      <xs:attribute name="priority" type="xs:int" default="0"/>
+      <xs:attributeGroup ref="xsf:creator.attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="inline">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The inline element is used as root element for the outcome of
+        an XStandoff2Inline transformation.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="milestone">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The milestone element is modelled after the TEI milestone
+        element and should be used when an XStandoff instance should be serialized into an inline
+        annotation format. The xsf:segment attribute can be used to refer to the segment that was
+        used in the XStandoff representation, the position attribute depicts the character position
+        in the primary data where the overlap happened.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute ref="xsf:segment" use="optional"/>
+      <xs:attribute name="n" use="optional"/>
+      <xs:attribute name="position" use="required" type="xs:positiveInteger"/>
+      <xs:attribute name="unit" use="required" type="xs:NMTOKENS"/>
+      <xs:attribute name="mType">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="start"/>
+            <xs:enumeration value="end"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <!-- Attribute group declaration -->
+  <xs:attributeGroup name="cd.attributes">
+    <xs:attribute ref="xml:id" use="required"/>
+    <xs:attribute name="xsfVersion" type="xs:decimal" default="2.1"/>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="seg.attributes">
+    <xs:attribute ref="xml:id" use="required"/>
+    <xs:attribute name="name" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">This attribute can be used to name a specific segment (e.g.
+          in case of spatial segmentation).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="primaryData" type="xs:IDREFS" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">If more than one primaryData element is present use this
+          attribute to refer to the respective primaryData element the segment is based
+          on.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" use="optional" default="char">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">The type attribute shall be used to specify the segment.
+          Possible values are: 'empty' for empty segments depicting formerly empty inline elements,
+          'char' for (non-whitespace) character data of the primary data, 'ws' for whitespace
+          character data, 'pun' for punctuation characters, 'dur' when using a duration (i.e.
+          non-character based) segmentation, 'spatial for spatial segments, 'seg' for depicting a
+          segment that is composed via other segments (the last segment type should be used to
+          create spatial-temporal segments).</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:NMTOKEN">
+          <xs:enumeration value="empty"/>
+          <xs:enumeration value="char"/>
+          <xs:enumeration value="dur"/>
+          <xs:enumeration value="spatial"/>
+          <xs:enumeration value="seg"/>
+          <xs:enumeration value="pointer"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="content" type="xs:string" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">In the very rare case that you want to store the textual
+          content of a segment, that is the primary data that is annotated by the annotation
+          elements referring to this very segment, use the content attribute. The content can be
+          saved in terms of literal characters or in terms of Unicode codepoints. See the
+          unicodeNormalizationForm attribute in the latter case.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="unicodeNormalizationForm" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Some special characters (such as accented characters) can be
+          represented in Unicode character sets by unique code points (precomposed) or with
+          combining characters (decomposed). Since XSF requires a unique representation, a
+          normalized form of Unicode text shall be used if a Unicode character set is used. Four
+          Unicode Standard normalization forms are available: Normalization Form D (NFD),
+          Normalization Form KD (NFKD), Normalization Form C (NFC), and Normalization Form KC
+          (NFKC). Roughly speaking, NFD and NFKD decompose characters where possible, while NFC and
+          NFKC compose characters where possible. Cf. Chapter 2, 'General Structure', Chapter 3,
+          'Conformance' and the Annex #15, 'Unicode Normalization Forms,' of The Unicode Standard
+          for details. This information may be used by software processing XStandoff
+          instances.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:NMTOKEN">
+          <xs:enumeration value="NFD"/>
+          <xs:enumeration value="NFKD"/>
+          <xs:enumeration value="NFC"/>
+          <xs:enumeration value="NFKC"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="segments" type="xs:IDREFS" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">The segments attribute can be used together with the mode
+          attribute to create a new segment via referring to already established
+          segments.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="mode" default="continuous">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">The mode attribute marks segments that are created by
+          referring to already established segments (cf. the segments attribute) either as
+          continuous or disjoint.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:NMTOKEN">
+          <xs:enumeration value="continuous"/>
+          <xs:enumeration value="disjoint"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="base.attributes">
+    <xs:attribute name="start" use="optional">
+      <xs:simpleType>
+        <xs:union memberTypes="xs:nonNegativeInteger xs:time xsf:coord"/>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="end" use="optional">
+      <xs:simpleType>
+        <xs:union memberTypes="xs:nonNegativeInteger xs:time xsf:coord"/>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="pd.attributes">
+    <xs:attribute name="role">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">In case of multiple primary data files one primary data may
+          be set as master using the role attribute. The master primary data file specifies the
+          segmentation method that is used for creating segments.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:NMTOKEN">
+          <xs:enumeration value="master"/>
+          <xs:enumeration value="slave"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="unit" use="optional" default="chars">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">The unit used for delimiting the segmentation. XSF doesn't
+          use the built-in data type duration, since it lacks some of the units used
+          here.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="chars"/>
+          <xs:enumeration value="bytes"/>
+          <xs:enumeration value="time"/>
+          <xs:enumeration value="microseconds"/>
+          <xs:enumeration value="milliseconds"/>
+          <xs:enumeration value="seconds"/>
+          <xs:enumeration value="minutes"/>
+          <xs:enumeration value="hours"/>
+          <xs:enumeration value="days"/>
+          <xs:enumeration value="weeks"/>
+          <xs:enumeration value="months"/>
+          <xs:enumeration value="years"/>
+          <xs:enumeration value="palFrames"/>
+          <xs:enumeration value="ntscFrames"/>
+          <xs:enumeration value="pixels"/>
+          <xs:enumeration value="millimeters"/>
+          <xs:enumeration value="centimeters"/>
+          <xs:enumeration value="meters"/>
+          <xs:enumeration value="inches"/>
+          <xs:enumeration value="points"/>
+          <xs:enumeration value="pica"/>
+          <xs:enumeration value="other"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="offset" use="optional" type="xs:integer">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">The offset attribute shall be used for specifying an offset
+          (in the same unit that is used for delimiting segments) between different primaryData
+          files.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="ref.attributes">
+    <xs:attribute name="uri" type="xs:anyURI" use="required">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">The URI specifying the location of the referenced
+          file.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="uriType" use="optional" default="relative">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">This attribute is used to differentiate between relative and
+          absolute URIs.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="relative"/>
+          <xs:enumeration value="absolute"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="encoding" type="xs:string" use="optional"/>
+    <xs:attribute name="unicodeNormalizationForm" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Some special characters (such as accented characters) can be
+          represented in Unicode character sets by unique code points (precomposed) or with
+          combining characters (decomposed). Since XSF requires a unique representation, a
+          normalized form of Unicode text shall be used if a Unicode character set is used. Four
+          Unicode Standard normalization forms are available: Normalization Form D (NFD),
+          Normalization Form KD (NFKD), Normalization Form C (NFC), and Normalization Form KC
+          (NFKC). Roughly speaking, NFD and NFKD decompose characters where possible, while NFC and
+          NFKC compose characters where possible. Cf. Chapter 2, 'General Structure', Chapter 3,
+          'Conformance' and the Annex #15, 'Unicode Normalization Forms,' of The Unicode Standard
+          for details. These information may be used by software processing XStandoff
+          instances.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="NFD"/>
+          <xs:enumeration value="NFKD"/>
+          <xs:enumeration value="NFC"/>
+          <xs:enumeration value="NFKC"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="mimeType" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Enumeration of mime-types that can be used for primary data
+          files. The list was compiled by various internet sources and may contain bogus mime-types
+          and should not be considered complete.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="application/acad"/>
+          <xs:enumeration value="application/activemessage"/>
+          <xs:enumeration value="application/andrew-inset"/>
+          <xs:enumeration value="application/applefile"/>
+          <xs:enumeration value="application/arj"/>
+          <xs:enumeration value="application/astound"/>
+          <xs:enumeration value="application/atomicmail"/>
+          <xs:enumeration value="application/base64"/>
+          <xs:enumeration value="application/binhex"/>
+          <xs:enumeration value="application/binhex40"/>
+          <xs:enumeration value="application/book"/>
+          <xs:enumeration value="application/cdf"/>
+          <xs:enumeration value="application/clariscad"/>
+          <xs:enumeration value="application/commonground"/>
+          <xs:enumeration value="application/dca-rft"/>
+          <xs:enumeration value="application/dec-dx"/>
+          <xs:enumeration value="application/drafting"/>
+          <xs:enumeration value="application/dsptype"/>
+          <xs:enumeration value="application/dxf"/>
+          <xs:enumeration value="application/envoy"/>
+          <xs:enumeration value="application/excel"/>
+          <xs:enumeration value="application/fractals"/>
+          <xs:enumeration value="application/freeloader"/>
+          <xs:enumeration value="application/futuresplash"/>
+          <xs:enumeration value="application/gnutar"/>
+          <xs:enumeration value="application/groupwise"/>
+          <xs:enumeration value="application/hlp"/>
+          <xs:enumeration value="application/hta"/>
+          <xs:enumeration value="application/i-deas"/>
+          <xs:enumeration value="application/iges"/>
+          <xs:enumeration value="application/inf"/>
+          <xs:enumeration value="application/java"/>
+          <xs:enumeration value="application/java-byte-code"/>
+          <xs:enumeration value="application/lha"/>
+          <xs:enumeration value="application/lzx"/>
+          <xs:enumeration value="application/mac-binary"/>
+          <xs:enumeration value="application/mac-binhex"/>
+          <xs:enumeration value="application/mac-binhex40"/>
+          <xs:enumeration value="application/mac-compactpro"/>
+          <xs:enumeration value="application/macbinary"/>
+          <xs:enumeration value="application/macwriteii"/>
+          <xs:enumeration value="application/marc"/>
+          <xs:enumeration value="application/mbedlet"/>
+          <xs:enumeration value="application/mcad"/>
+          <xs:enumeration value="application/mime"/>
+          <xs:enumeration value="application/mspowerpoint"/>
+          <xs:enumeration value="application/msword"/>
+          <xs:enumeration value="application/mswrite"/>
+          <xs:enumeration value="application/netmc"/>
+          <xs:enumeration value="application/news-message-id"/>
+          <xs:enumeration value="application/news-transmission"/>
+          <xs:enumeration value="application/octet-stream"/>
+          <xs:enumeration value="application/oda"/>
+          <xs:enumeration value="application/pdf"/>
+          <xs:enumeration value="application/pkcs-12"/>
+          <xs:enumeration value="application/pkcs-crl"/>
+          <xs:enumeration value="application/pkcs10"/>
+          <xs:enumeration value="application/pkcs7-mime"/>
+          <xs:enumeration value="application/pkcs7-signature"/>
+          <xs:enumeration value="application/pkix-cert"/>
+          <xs:enumeration value="application/pkix-crl"/>
+          <xs:enumeration value="application/plain"/>
+          <xs:enumeration value="application/postscript"/>
+          <xs:enumeration value="application/powerpoint"/>
+          <xs:enumeration value="application/pro_eng"/>
+          <xs:enumeration value="application/remote-printing"/>
+          <xs:enumeration value="application/ringing-tones"/>
+          <xs:enumeration value="application/rtf"/>
+          <xs:enumeration value="application/sdp"/>
+          <xs:enumeration value="application/sea"/>
+          <xs:enumeration value="application/set"/>
+          <xs:enumeration value="application/sla"/>
+          <xs:enumeration value="application/slate"/>
+          <xs:enumeration value="application/smil"/>
+          <xs:enumeration value="application/solids"/>
+          <xs:enumeration value="application/sounder"/>
+          <xs:enumeration value="application/step"/>
+          <xs:enumeration value="application/streamingmedia"/>
+          <xs:enumeration value="application/toolbook"/>
+          <xs:enumeration value="application/vda"/>
+          <xs:enumeration value="application/vnd.fdf"/>
+          <xs:enumeration value="application/vnd.hp-hpgl"/>
+          <xs:enumeration value="application/vnd.hp-pcl"/>
+          <xs:enumeration value="application/vnd.ms-excel"/>
+          <xs:enumeration value="application/vnd.ms-pki.certstore"/>
+          <xs:enumeration value="application/vnd.ms-pki.pko"/>
+          <xs:enumeration value="application/vnd.ms-pki.seccat"/>
+          <xs:enumeration value="application/vnd.ms-pki.stl"/>
+          <xs:enumeration value="application/vnd.ms-powerpoint"/>
+          <xs:enumeration value="application/vnd.ms-project"/>
+          <xs:enumeration value="application/vnd.nokia.configuration-message"/>
+          <xs:enumeration value="application/vnd.nokia.ringing-tone"/>
+          <xs:enumeration value="application/vnd.rn-realmedia"/>
+          <xs:enumeration value="application/vnd.rn-realplayer"/>
+          <xs:enumeration value="application/vnd.wap.wmlc"/>
+          <xs:enumeration value="application/vnd.wap.wmlscriptc"/>
+          <xs:enumeration value="application/vnd.xara"/>
+          <xs:enumeration value="application/vocaltec-media-desc"/>
+          <xs:enumeration value="application/vocaltec-media-file"/>
+          <xs:enumeration value="application/wita"/>
+          <xs:enumeration value="application/wordperfect"/>
+          <xs:enumeration value="application/wordperfect5.1"/>
+          <xs:enumeration value="application/wordperfect6.0"/>
+          <xs:enumeration value="application/wordperfect6.1"/>
+          <xs:enumeration value="application/x-123"/>
+          <xs:enumeration value="application/x-aim"/>
+          <xs:enumeration value="application/x-authorware-bin"/>
+          <xs:enumeration value="application/x-authorware-map"/>
+          <xs:enumeration value="application/x-authorware-seg"/>
+          <xs:enumeration value="application/x-bcpio"/>
+          <xs:enumeration value="application/x-bcpio"/>
+          <xs:enumeration value="application/x-binary"/>
+          <xs:enumeration value="application/x-binhex40"/>
+          <xs:enumeration value="application/x-bsh"/>
+          <xs:enumeration value="application/x-bytecode.elisp (compiled elisp)"/>
+          <xs:enumeration value="application/x-bytecode.python"/>
+          <xs:enumeration value="application/x-bzip"/>
+          <xs:enumeration value="application/x-bzip2"/>
+          <xs:enumeration value="application/x-cdf"/>
+          <xs:enumeration value="application/x-cdlink"/>
+          <xs:enumeration value="application/x-chat"/>
+          <xs:enumeration value="application/x-cmu-raster"/>
+          <xs:enumeration value="application/x-cocoa"/>
+          <xs:enumeration value="application/x-compactpro"/>
+          <xs:enumeration value="application/x-compress"/>
+          <xs:enumeration value="application/x-compressed"/>
+          <xs:enumeration value="application/x-conference"/>
+          <xs:enumeration value="application/x-cpio"/>
+          <xs:enumeration value="application/x-cpt"/>
+          <xs:enumeration value="application/x-csh"/>
+          <xs:enumeration value="application/x-deepv"/>
+          <xs:enumeration value="application/x-director"/>
+          <xs:enumeration value="application/x-dvi"/>
+          <xs:enumeration value="application/x-elc"/>
+          <xs:enumeration value="application/x-envoy"/>
+          <xs:enumeration value="application/x-esrehber"/>
+          <xs:enumeration value="application/x-excel"/>
+          <xs:enumeration value="application/x-frame"/>
+          <xs:enumeration value="application/x-freelance"/>
+          <xs:enumeration value="application/x-gsp"/>
+          <xs:enumeration value="application/x-gss"/>
+          <xs:enumeration value="application/x-gtar"/>
+          <xs:enumeration value="application/x-gzip"/>
+          <xs:enumeration value="application/x-hdf"/>
+          <xs:enumeration value="application/x-helpfile"/>
+          <xs:enumeration value="application/x-httpd-cgi"/>
+          <xs:enumeration value="application/x-httpd-imap"/>
+          <xs:enumeration value="application/x-ima"/>
+          <xs:enumeration value="application/x-internett-signup"/>
+          <xs:enumeration value="application/x-inventor"/>
+          <xs:enumeration value="application/x-ip2"/>
+          <xs:enumeration value="application/x-java-class"/>
+          <xs:enumeration value="application/x-java-commerce"/>
+          <xs:enumeration value="application/x-javascript"/>
+          <xs:enumeration value="application/x-koan"/>
+          <xs:enumeration value="application/x-ksh"/>
+          <xs:enumeration value="application/x-latex"/>
+          <xs:enumeration value="application/x-lha"/>
+          <xs:enumeration value="application/x-lisp"/>
+          <xs:enumeration value="application/x-livescreen"/>
+          <xs:enumeration value="application/x-lotus"/>
+          <xs:enumeration value="application/x-lotusscreencam"/>
+          <xs:enumeration value="application/x-lzh"/>
+          <xs:enumeration value="application/x-lzx"/>
+          <xs:enumeration value="application/x-mac-binhex40"/>
+          <xs:enumeration value="application/x-macbinary"/>
+          <xs:enumeration value="application/x-magic-cap-package-1.0"/>
+          <xs:enumeration value="application/x-mathcad"/>
+          <xs:enumeration value="application/x-meme"/>
+          <xs:enumeration value="application/x-midi"/>
+          <xs:enumeration value="application/x-mif"/>
+          <xs:enumeration value="application/x-mix-transfer"/>
+          <xs:enumeration value="application/x-mplayer2"/>
+          <xs:enumeration value="application/x-msexcel"/>
+          <xs:enumeration value="application/x-mspowerpoint"/>
+          <xs:enumeration value="application/x-navi-animation"/>
+          <xs:enumeration value="application/x-navidoc"/>
+          <xs:enumeration value="application/x-navimap"/>
+          <xs:enumeration value="application/x-navistyle"/>
+          <xs:enumeration value="application/x-netcdf"/>
+          <xs:enumeration value="application/x-newton-compatible-pkg"/>
+          <xs:enumeration value="application/x-nokia-9000-communicator-add-on-software"/>
+          <xs:enumeration value="application/x-omc"/>
+          <xs:enumeration value="application/x-omcdatamaker"/>
+          <xs:enumeration value="application/x-omcregerator"/>
+          <xs:enumeration value="application/x-pagemaker"/>
+          <xs:enumeration value="application/x-pcl"/>
+          <xs:enumeration value="application/x-pixclscript"/>
+          <xs:enumeration value="application/x-pkcs10"/>
+          <xs:enumeration value="application/x-pkcs12"/>
+          <xs:enumeration value="application/x-pkcs7-certificates"/>
+          <xs:enumeration value="application/x-pkcs7-certreqresp"/>
+          <xs:enumeration value="application/x-pkcs7-mime"/>
+          <xs:enumeration value="application/x-pkcs7-signature"/>
+          <xs:enumeration value="application/x-pointplus"/>
+          <xs:enumeration value="application/x-portable-anymap"/>
+          <xs:enumeration value="application/x-project"/>
+          <xs:enumeration value="application/x-qpro"/>
+          <xs:enumeration value="application/x-rtf"/>
+          <xs:enumeration value="application/x-sdp"/>
+          <xs:enumeration value="application/x-sea"/>
+          <xs:enumeration value="application/x-seelogo"/>
+          <xs:enumeration value="application/x-sh"/>
+          <xs:enumeration value="application/x-sh"/>
+          <xs:enumeration value="application/x-shar"/>
+          <xs:enumeration value="application/x-shar"/>
+          <xs:enumeration value="application/x-shockwave-flash"/>
+          <xs:enumeration value="application/x-sit"/>
+          <xs:enumeration value="application/x-sprite"/>
+          <xs:enumeration value="application/x-stuffit"/>
+          <xs:enumeration value="application/x-sv4cpio"/>
+          <xs:enumeration value="application/x-sv4crc"/>
+          <xs:enumeration value="application/x-sv4crc"/>
+          <xs:enumeration value="application/x-tar"/>
+          <xs:enumeration value="application/x-tbook"/>
+          <xs:enumeration value="application/x-tcl"/>
+          <xs:enumeration value="application/x-tex"/>
+          <xs:enumeration value="application/x-texinfo"/>
+          <xs:enumeration value="application/x-troff"/>
+          <xs:enumeration value="application/x-troff-man"/>
+          <xs:enumeration value="application/x-troff-me"/>
+          <xs:enumeration value="application/x-troff-ms"/>
+          <xs:enumeration value="application/x-troff-msvideo"/>
+          <xs:enumeration value="application/x-ustar"/>
+          <xs:enumeration value="application/x-visio"/>
+          <xs:enumeration value="application/x-vnd.audioexplosion.mzz"/>
+          <xs:enumeration value="application/x-vnd.ls-xpix"/>
+          <xs:enumeration value="application/x-vrml"/>
+          <xs:enumeration value="application/x-wais-source"/>
+          <xs:enumeration value="application/x-winhelp"/>
+          <xs:enumeration value="application/x-wintalk"/>
+          <xs:enumeration value="application/x-world"/>
+          <xs:enumeration value="application/x-wpwin"/>
+          <xs:enumeration value="application/x-wri"/>
+          <xs:enumeration value="application/x-x509-ca-cert"/>
+          <xs:enumeration value="application/x-x509-user-cert"/>
+          <xs:enumeration value="application/x-zip-compressed"/>
+          <xs:enumeration value="application/xhtml+xml"/>
+          <xs:enumeration value="application/xml"/>
+          <xs:enumeration value="application/zip"/>
+          <xs:enumeration value="audio/aiff"/>
+          <xs:enumeration value="audio/basic"/>
+          <xs:enumeration value="audio/it"/>
+          <xs:enumeration value="audio/make"/>
+          <xs:enumeration value="audio/make.my.funk"/>
+          <xs:enumeration value="audio/mid"/>
+          <xs:enumeration value="audio/midi"/>
+          <xs:enumeration value="audio/mod"/>
+          <xs:enumeration value="audio/mpeg"/>
+          <xs:enumeration value="audio/mpeg3"/>
+          <xs:enumeration value="audio/nspaudio"/>
+          <xs:enumeration value="audio/s3m"/>
+          <xs:enumeration value="audio/tsp-audio"/>
+          <xs:enumeration value="audio/tsplayer"/>
+          <xs:enumeration value="audio/vnd.qcelp"/>
+          <xs:enumeration value="audio/voc"/>
+          <xs:enumeration value="audio/voxware"/>
+          <xs:enumeration value="audio/wav"/>
+          <xs:enumeration value="audio/x-adpcm"/>
+          <xs:enumeration value="audio/x-aiff"/>
+          <xs:enumeration value="audio/x-au"/>
+          <xs:enumeration value="audio/x-gsm"/>
+          <xs:enumeration value="audio/x-jam"/>
+          <xs:enumeration value="audio/x-liveaudio"/>
+          <xs:enumeration value="audio/x-mid"/>
+          <xs:enumeration value="audio/x-midi"/>
+          <xs:enumeration value="audio/x-mod"/>
+          <xs:enumeration value="audio/x-mpeg"/>
+          <xs:enumeration value="audio/x-mpeg-3"/>
+          <xs:enumeration value="audio/x-mpequrl"/>
+          <xs:enumeration value="audio/x-nspaudio"/>
+          <xs:enumeration value="audio/x-pn-realaudio"/>
+          <xs:enumeration value="audio/x-pn-realaudio-plugin"/>
+          <xs:enumeration value="audio/x-psid"/>
+          <xs:enumeration value="audio/x-realaudio"/>
+          <xs:enumeration value="audio/x-twinvq"/>
+          <xs:enumeration value="audio/x-twinvq-plugin"/>
+          <xs:enumeration value="audio/x-vnd.audioexplosion.mjuicemediafile"/>
+          <xs:enumeration value="audio/x-voc"/>
+          <xs:enumeration value="audio/x-wav"/>
+          <xs:enumeration value="audio/xm"/>
+          <xs:enumeration value="chemical/x-pdb"/>
+          <xs:enumeration value="i-world/i-vrml"/>
+          <xs:enumeration value="image/bmp"/>
+          <xs:enumeration value="image/cmu-raster"/>
+          <xs:enumeration value="image/fif"/>
+          <xs:enumeration value="image/florian"/>
+          <xs:enumeration value="image/g3fax"/>
+          <xs:enumeration value="image/gif"/>
+          <xs:enumeration value="image/ief"/>
+          <xs:enumeration value="image/jpeg"/>
+          <xs:enumeration value="image/jutvision"/>
+          <xs:enumeration value="image/naplps"/>
+          <xs:enumeration value="image/pict"/>
+          <xs:enumeration value="image/pjpeg"/>
+          <xs:enumeration value="image/png"/>
+          <xs:enumeration value="image/tiff"/>
+          <xs:enumeration value="image/vasa"/>
+          <xs:enumeration value="image/vnd.dwg"/>
+          <xs:enumeration value="image/vnd.fpx"/>
+          <xs:enumeration value="image/vnd.net-fpx"/>
+          <xs:enumeration value="image/vnd.rn-realflash"/>
+          <xs:enumeration value="image/vnd.rn-realpix"/>
+          <xs:enumeration value="image/vnd.wap.wbmp"/>
+          <xs:enumeration value="image/vnd.xiff"/>
+          <xs:enumeration value="image/x-cmu-raster"/>
+          <xs:enumeration value="image/x-dwg"/>
+          <xs:enumeration value="image/x-icon"/>
+          <xs:enumeration value="image/x-jg"/>
+          <xs:enumeration value="image/x-jps"/>
+          <xs:enumeration value="image/x-niff"/>
+          <xs:enumeration value="image/x-pcx"/>
+          <xs:enumeration value="image/x-pict"/>
+          <xs:enumeration value="image/x-portable-anymap"/>
+          <xs:enumeration value="image/x-portable-bitmap"/>
+          <xs:enumeration value="image/x-portable-greymap"/>
+          <xs:enumeration value="image/x-portable-pixmap"/>
+          <xs:enumeration value="image/x-quicktime"/>
+          <xs:enumeration value="image/x-rgb"/>
+          <xs:enumeration value="image/x-tiff"/>
+          <xs:enumeration value="image/x-windows-bmp"/>
+          <xs:enumeration value="image/x-xbitmap"/>
+          <xs:enumeration value="image/x-xbm"/>
+          <xs:enumeration value="image/x-xpixmap"/>
+          <xs:enumeration value="image/x-xwd"/>
+          <xs:enumeration value="image/x-xwindowdump"/>
+          <xs:enumeration value="image/xbm"/>
+          <xs:enumeration value="image/xpm"/>
+          <xs:enumeration value="message/external-body"/>
+          <xs:enumeration value="message/news"/>
+          <xs:enumeration value="message/partial"/>
+          <xs:enumeration value="message/rfc822"/>
+          <xs:enumeration value="model/iges"/>
+          <xs:enumeration value="model/vnd.dwf"/>
+          <xs:enumeration value="model/vrml"/>
+          <xs:enumeration value="model/x-pov"/>
+          <xs:enumeration value="multipart/alternative"/>
+          <xs:enumeration value="multipart/appledouble"/>
+          <xs:enumeration value="multipart/digest"/>
+          <xs:enumeration value="multipart/mixed"/>
+          <xs:enumeration value="multipart/parallel"/>
+          <xs:enumeration value="multipart/x-gzip"/>
+          <xs:enumeration value="multipart/x-ustar"/>
+          <xs:enumeration value="multipart/x-zip"/>
+          <xs:enumeration value="music/crescendo"/>
+          <xs:enumeration value="music/x-karaoke"/>
+          <xs:enumeration value="paleovu/x-pv"/>
+          <xs:enumeration value="text/asp"/>
+          <xs:enumeration value="text/css"/>
+          <xs:enumeration value="text/html"/>
+          <xs:enumeration value="text/html"/>
+          <xs:enumeration value="text/mcf"/>
+          <xs:enumeration value="text/pascal"/>
+          <xs:enumeration value="text/plain"/>
+          <xs:enumeration value="text/richtext"/>
+          <xs:enumeration value="text/scriplet"/>
+          <xs:enumeration value="text/sgml"/>
+          <xs:enumeration value="text/tab-separated-values"/>
+          <xs:enumeration value="text/uri-list"/>
+          <xs:enumeration value="text/vnd.abc"/>
+          <xs:enumeration value="text/vnd.fmi.flexstor"/>
+          <xs:enumeration value="text/vnd.rn-realtext"/>
+          <xs:enumeration value="text/vnd.wap.wml"/>
+          <xs:enumeration value="text/vnd.wap.wmlscript"/>
+          <xs:enumeration value="text/webviewhtml"/>
+          <xs:enumeration value="text/x-asm"/>
+          <xs:enumeration value="text/x-audiosoft-intra"/>
+          <xs:enumeration value="text/x-c"/>
+          <xs:enumeration value="text/x-component"/>
+          <xs:enumeration value="text/x-fortran"/>
+          <xs:enumeration value="text/x-h"/>
+          <xs:enumeration value="text/x-java-source"/>
+          <xs:enumeration value="text/x-la-asf"/>
+          <xs:enumeration value="text/x-m"/>
+          <xs:enumeration value="text/x-pascal"/>
+          <xs:enumeration value="text/x-script"/>
+          <xs:enumeration value="text/x-script.csh"/>
+          <xs:enumeration value="text/x-script.elisp"/>
+          <xs:enumeration value="text/x-script.guile"/>
+          <xs:enumeration value="text/x-script.ksh"/>
+          <xs:enumeration value="text/x-script.lisp"/>
+          <xs:enumeration value="text/x-script.perl"/>
+          <xs:enumeration value="text/x-script.perl-module"/>
+          <xs:enumeration value="text/x-script.phyton"/>
+          <xs:enumeration value="text/x-script.rexx"/>
+          <xs:enumeration value="text/x-script.scheme"/>
+          <xs:enumeration value="text/x-script.sh"/>
+          <xs:enumeration value="text/x-script.tcl"/>
+          <xs:enumeration value="text/x-script.tcsh"/>
+          <xs:enumeration value="text/x-script.zsh"/>
+          <xs:enumeration value="text/x-server-parsed-html"/>
+          <xs:enumeration value="text/x-setext"/>
+          <xs:enumeration value="text/x-sgml"/>
+          <xs:enumeration value="text/x-speech"/>
+          <xs:enumeration value="text/x-uil"/>
+          <xs:enumeration value="text/x-uuencode"/>
+          <xs:enumeration value="text/x-vcalendar"/>
+          <xs:enumeration value="text/xml"/>
+          <xs:enumeration value="video/animaflex"/>
+          <xs:enumeration value="video/avi"/>
+          <xs:enumeration value="video/avs-video"/>
+          <xs:enumeration value="video/dl"/>
+          <xs:enumeration value="video/fli"/>
+          <xs:enumeration value="video/gl"/>
+          <xs:enumeration value="video/mpeg"/>
+          <xs:enumeration value="video/mpeg"/>
+          <xs:enumeration value="video/msvideo"/>
+          <xs:enumeration value="video/quicktime"/>
+          <xs:enumeration value="video/quicktime"/>
+          <xs:enumeration value="video/vdo"/>
+          <xs:enumeration value="video/vivo"/>
+          <xs:enumeration value="video/vnd.rn-realvideo"/>
+          <xs:enumeration value="video/vnd.vivo"/>
+          <xs:enumeration value="video/vosaic"/>
+          <xs:enumeration value="video/x-amt-demorun"/>
+          <xs:enumeration value="video/x-amt-showrun"/>
+          <xs:enumeration value="video/x-atomic3d-feature"/>
+          <xs:enumeration value="video/x-dl"/>
+          <xs:enumeration value="video/x-dv"/>
+          <xs:enumeration value="video/x-dv"/>
+          <xs:enumeration value="video/x-fli"/>
+          <xs:enumeration value="video/x-gl"/>
+          <xs:enumeration value="video/x-isvideo"/>
+          <xs:enumeration value="video/x-motion-jpeg"/>
+          <xs:enumeration value="video/x-mpeg"/>
+          <xs:enumeration value="video/x-mpeq2a"/>
+          <xs:enumeration value="video/x-ms-asf"/>
+          <xs:enumeration value="video/x-ms-asf-plugin"/>
+          <xs:enumeration value="video/x-msvideo"/>
+          <xs:enumeration value="video/x-qtc"/>
+          <xs:enumeration value="video/x-scm"/>
+          <xs:enumeration value="video/x-sgi-movie"/>
+          <xs:enumeration value="windows/metafile"/>
+          <xs:enumeration value="www/mime"/>
+          <xs:enumeration value="x-conference/x-cooltalk"/>
+          <xs:enumeration value="x-music/x-midi"/>
+          <xs:enumeration value="x-world/x-3dmf"/>
+          <xs:enumeration value="x-world/x-svr"/>
+          <xs:enumeration value="x-world/x-vrml"/>
+          <xs:enumeration value="x-world/x-vrt"/>
+          <xs:enumeration value="xgl/drawing"/>
+          <xs:enumeration value="xgl/movie"/>
+          <xs:enumeration value="other"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="spatial.attributes">
+    <xs:attribute name="context" use="optional" default="2d">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">The context attribute should be used in conjunction with the
+          value 'spatial' of the type attribute and is used for depicting 2- or 3-dimensional
+          segments in space.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:NMTOKEN">
+          <xs:enumeration value="2d"/>
+          <xs:enumeration value="3d"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="shape" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">The shape attribute should be only used for spatial
+          segments. It can be used to define either polygons, circles or cubic Bézir curves. In the
+          first case use a set of coordinate pairs x,y (in 2-dimensional contexts) or triples x,y,z
+          (in 3-dimensional contexts) as value for the coords attribute. In the second case use a
+          single triple x,y,r as value for the coords attribute (refer to the documentation of the
+          coords attribute). In the third case, use at least a set of four coordinate
+          pairs.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:NMTOKEN">
+          <xs:enumeration value="line"/>
+          <xs:enumeration value="circle"/>
+          <xs:enumeration value="poly"/>
+          <xs:enumeration value="bezier"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="coords" use="optional" type="xsf:coord">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">The coords attribute should be used in conjunction with the
+          value 'spatial' of the type attribute and the shape attribute. We use a subset of HTML's
+          image map model for defining the coordinates of a spatial segment, namely the polygon
+          shape. For 2d contexts use by pairs of x,y coordinates (a pair is separated internally via
+          ',', and from other coordinates via ' '). Four coordinate pairs x1 (upper left corner,
+          x-axis), y1 (upper-left corner, y-axis), x2 (lower-right corner, x-axis), y2
+          (lower-right-corner, y-axis) are needed for a rectangular shape (a virtual line will
+          connect the last coordinate with the first one), three coordinates x (center, x-axis), y
+          (center, y-axis) and r (radius) for a circular shape. If you use coordinate triples
+          instead of pairs either the value of the context attribute is set to '3d', then the last
+          value is considered as z coordinate. Or the shape's attribute value is set to 'circle' --
+          in this case only a single triple is allowed. In case of a cubic Bézier curve we follow
+          SVG's syntax by using the capital letter 'C' (absolute positioning) and at least four x,y
+          coordinate pairs (the first one serves as start coordinate similar to SVG's moveto ('M')
+          command. A cubic Bézier curve is therefore constructed as follows: x1,y1 as starting
+          point, x2,y2 as control point at the beginning of the curve, x3,y3 as the control point at
+          the end of the curve and x4,y4 as the end coordinate. After the first set of four
+          coordinate pairs, it is possible to use a multiplicity of triple pairs as additional
+          coordinates. Note, that the Bézier curve will be closed via a line drawn between the last
+          coordinate and the first (simulating SVG's closepath command, 'z').</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="spatial.ref.attributes">
+    <xs:attribute name="width" type="xs:positiveInteger" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">In case the primary data file consists of still or moving
+          pictures use this attribute to provide its width (using the value of the unit attribute as
+          units, typically pixels).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="height" type="xs:positiveInteger" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">In case the primary data file consists of still or moving
+          pictures use this attribute to provide its height (using the value of the unit attribute
+          as units, typically pixels).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="horizontalResolution" type="xs:positiveInteger" use="optional" default="72">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">In case the primary data file consists of still or moving
+          pictures use this attribute to provide its horizontal resolution (in pixel per inch,
+          ppi).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verticalResolution" type="xs:positiveInteger" use="optional" default="72">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">In case the primary data file consists of still or moving
+          pictures use this attribute to provide its vertical resolution (in pixel per inch,
+          ppi).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="imported">
+    <xs:annotation>
+      <xs:documentation xml:lang="en"><p>This attribute group should be imported into the schema
+          files of the respective layers. It consists of the obligatory segment attribute and the
+          optional dcr:datcat, dcr:valueDatcat attribute (borrowed from TEI's DCR implementation).
+          Furthermore, the ordered attribute can be used to express that the order of the element
+          nodes has to be followed (default in XML anyway) or can be neglected (see the
+          documentation of the ordered attribute).</p>
+        <p>In order to import the imported attGroup into the layer schema files, it is necessary to
+          include the xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" namespace and the
+          vc:minVersion="1.1" attribute/value pair to the root schema
+          element.</p></xs:documentation>
+    </xs:annotation>
+    <xs:attribute ref="xsf:id" use="optional"/>
+    <xs:attribute ref="xsf:segment" use="optional"/>
+    <xs:attribute ref="dcr:datcat" use="optional"/>
+    <xs:attribute ref="dcr:valueDatcat" use="optional"/>
+    <xs:attribute ref="xsf:ordered" use="optional"/>
+    <xs:attribute ref="xsf:previousVersionLogEntry" use="optional"/>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="creator.attribute">
+    <xs:attribute name="creator" type="xs:NMTOKENS" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">The creator attribute may be used for referring to (non-)
+          human agent (e.g. a resource) that was involved in creating an item.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="alt.attribute">
+    <xs:attribute name="alt" type="xs:IDREFS" use="optional">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">The alt attribute may be used for referring to an alternate
+          version, either in terms of isVersionOf, isBasedOn, isFormatOf or similar relations. The
+          type of relation should be specified in the meta data entry of the respective element
+          bearing the alt attribute.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="pointer.attributes">
+    <xs:attribute name="target" use="optional" type="xs:anyURI">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">The value of the target attribute should be an XPath 2.0
+          expression.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="log.attributes">
+    <xs:attribute name="timestamp" use="optional">
+      <xs:simpleType>
+        <xs:union memberTypes="xs:nonNegativeInteger xs:dateTime xs:time"/>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attributeGroup ref="xsf:creator.attribute"/>
+  </xs:attributeGroup>
+  <!-- Attribute declaration -->
+  <xs:attribute name="id" type="xs:ID"/>
+  <xs:attribute name="segment" type="xs:IDREFS"/>
+  <xs:attribute name="ordered" type="xs:boolean" default="1">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The ordered attribute shall be used when the XML-inherit
+        ordering of the nodes, that is the linear ordering of the element nodes, shall be ignored.
+        Note that this does not circumvent the XML-inherited ordering when processed by an
+        XML-capable tool but only hints to processing software that ordering is not
+        required.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="previousVersionLogEntry" type="xs:IDREF">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The previousVersionLogEntry attribute shall be used in case of
+        altered (that is modified) annotation elements. Since the previous version of the modified
+        element is stored under the corresponding log/entry/modify element, this attribute should be
+        used to link between the current version and its former instantiation.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <!-- complexType declaration -->
+  <xs:complexType name="refType">
+    <xs:attributeGroup ref="xsf:ref.attributes"/>
+  </xs:complexType>
+  <xs:simpleType name="coord">
+    <xs:restriction base="xs:string">
+      <xs:pattern
+        value="(\d+,\d+( \d+,\d+)*)|(\d+,\d+,\d+( \d+,\d+,\d+)*)+|C\d+,\d+ (\d+,\d+ \d+,\d+ \d+,\d+)+"
+      />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- model group declaration -->
+  <xs:group name="metaChoice">
+    <xs:choice>
+      <xs:element ref="xsf:meta" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="xsf:metaRef" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:choice>
+  </xs:group>
+  <xs:group name="log">
+    <xs:choice>
+      <!-- Elements defining the log -->
+      <xs:element name="update">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Modifications of the annotation layer(s) or elements. When
+            modifying an element, the previous version is stored as child element of the update
+            element. Note that processContents is set to skip, so that identifiers used in children
+            of the action element do not have to be unique.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+          </xs:sequence>
+          <xs:attributeGroup ref="xsf:log.attributes"/>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="delete">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">Deletion of elements of one or more annotation layer(s).
+            The affected element is referred by the corresponding attribute.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:attributeGroup ref="xsf:log.attributes"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:group name="imported">
+    <xs:choice>
+      <xs:group ref="xsf:metaChoice"/>
+      <xs:group ref="xsf:log"/>
+    </xs:choice>
+  </xs:group>
+</xs:schema>
