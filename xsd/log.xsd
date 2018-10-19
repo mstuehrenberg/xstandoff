@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="http://www.text-technology.de/sekimo/log"
+  xmlns:log="http://www.text-technology.de/sekimo/log"
+  xmlns:sgf="http://www.text-technology.de/sekimo" elementFormDefault="qualified">
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd"/>
+  <xs:import namespace="http://www.text-technology.de/sekimo" schemaLocation="sgf.xsd"/>
+  <xs:annotation>
+    <xs:documentation>
+      <![CDATA[
+      XSD for the Sekimo Generic Format's (SGF) log file 
+      Version: 1.0
+      Date: 2008-10-29
+      Copyright (c) 2008-2009 Maik Stührenberg, Sekimo project, Bielefeld University.
+      Contact: maik.stuehrenberg@uni-bielefeld.de
+      This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+      This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+
+      You should have received a copy of the GNU Lesser General Public License along with this program (file 'lgpl-3.0.txt').  If not, see <http://www.gnu.org/licenses/>.
+      ]]>
+    </xs:documentation>
+  </xs:annotation>
+  <xs:element name="log">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">The optional log element can be used as a transaction log or
+        document revision history. It contains previous version(s) of annotation elements. It
+        depends on the software processing SGF instances if all log activities are merged into their
+        respective segments or annotations when saving an SGF file or if the log remains intact for
+        revision history reasons.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="sgf:meta" minOccurs="0"/>
+        <xs:element name="entry" minOccurs="1" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation xml:lang="en">A log entry can be seen as a single user session. Every
+              action taking place during this session is saved when the log is
+              used.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence minOccurs="1" maxOccurs="unbounded">
+              <xs:element ref="sgf:meta" minOccurs="0"/>
+              <xs:choice minOccurs="1" maxOccurs="unbounded">
+                <xs:element ref="log:add"/>
+                <xs:element ref="log:modify"/>
+                <xs:element ref="log:delete"/>
+              </xs:choice>
+            </xs:sequence>
+            <xs:attribute ref="xml:id" use="required"/>
+            <xs:attribute ref="sgf:annotator" use="required"/>
+            <xs:attribute name="timestamp" use="required" type="xs:dateTime"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="add">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">Additions to the annotation layer(s). Note that
+        processContents is set to strict, so that identifiers used in children of the add element
+        have to be unique.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="strict"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="modify">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">Modifications of the annotation layer(s) or elements. When
+        modifying an element, the previous version is stored as child element of the modify element.
+        Note that processContents is set to skip, so that identifiers used in children of the action
+        element do not have to be unique.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+      </xs:sequence>
+      <xs:attribute ref="log:affectedItem" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="delete">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">Deletion of elements of one or more annotation layer(s). The
+        affected element is referred by the corresponding attribute.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute ref="log:affectedItem" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attribute name="affectedItem" type="xs:IDREF"/>
+</xs:schema>
